@@ -35,6 +35,20 @@ actions:
     setup-fstab: true
     setup-kernel-cmdline: false
 
+  - action: apt
+    description: kernel
+    recommends: true
+    packages:
+      - linux-image-amd64
+      - initramfs-tools
+
+  - action: apt
+    description: grub
+    recommends: true
+    packages:
+      - grub-efi
+      - shim-signed
+
   - action: run
     description: setup grub
     chroot: true

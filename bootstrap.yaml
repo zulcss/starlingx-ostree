@@ -61,25 +61,17 @@ actions:
       - dbus
       - policykit-1
       - libnss-resolve
+      - openssh-server
+      - openssh-client
+      - dbus-user-session
+      - iptables
+      - nftables
+      - apparmor
 
   - action: apt
     description: misc apckages
     packages:
       - git
-
-  - action: apt
-    description: kernel
-    recommends: true
-    packages:
-      - linux-image-amd64
-      - initramfs-tools
-
-  - action: apt
-    description: grub
-    recommends: true
-    packages:
-      - grub-efi
-      - shim-signed
 
   - action: run
     description: Install standard system utilities

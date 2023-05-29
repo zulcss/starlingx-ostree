@@ -1,3 +1,5 @@
+all: bootstrap image-amd64
+
 bootstrap:
 	rm -f rootfs.tar.gz
 	debos -v bootstrap.yaml
