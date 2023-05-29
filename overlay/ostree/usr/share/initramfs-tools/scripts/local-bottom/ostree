@@ -1,0 +1,43 @@
+#!/bin/sh -e
+
+# Original version of 'switchroot.sh' from ostree upstream:
+# https://github.com/ostreedev/ostree/blob/master/src/switchroot/switchroot.sh
+
+sysroot=$rootmnt
+
+## the ostree boot parameter is available during the init
+env | grep ostree
+# ostree=/ostree/boot.1/.../.../0
+## bind mount the ostree deployment to prepare it for move
+mount --bind $sysroot$ostree $sysroot$ostree
+## bind mount read-only /usr
+mount --bind $sysroot$ostree/usr $sysroot$ostree/usr
+mount --bind -o remount,ro $sysroot$ostree/usr $sysroot$ostree/usr
+## bind mount the physical root
+mount --bind $sysroot $sysroot$ostree/sysroot
+## bind mount the var directory which is preserved between deployments
+cd $sysroot$ostree
+mount --bind ../../var ./var
+## make sure target directories are present within var
+cd $sysroot$ostree/var
+mkdir -p roothome mnt opt home
+## NOTE: Don't use `cd -` as it will print to stdout and console might be
+## unavailable, causing an error.
+cd $sysroot$ostree
+## move the deployment to the sysroot
+mount --move $sysroot$ostree $sysroot
+## after these the init system should start the switch root process
+
+. /scripts/functions
+
+# In case if we don't use separate partition for /boot we need to
+# provide system's /boot for correct ostree work
+if ! read_fstab_entry /boot; then
+    ## Do bind mount of /boot to keep the ostree bootloader configuration in place
+    mount --bind $rootmnt/sysroot/boot $rootmnt/boot
+fi
+
+## Mark the system is ostree-booted
+#  TODO: remove this "touch" after resolving the task APERTIS-5762
+#  Do not fail here if /run is not available or not mounted
+touch /run/ostree-booted || true

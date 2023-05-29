@@ -1,0 +1,41 @@
+---
+architecture: amd64
+
+actions:
+  - action: unpack 
+    file: rootfs.tar.gz
+
+  - action: overlay
+    description: install ostree
+    source: overlay/ostree
+
+  - action: apt
+    description: install kernel
+    recommends: true
+    packages:
+      - linux-image-amd64
+      - initramfs-tools
+
+  - action: apt
+    description: install grub
+    recommends: true
+    packages:
+      - grub-efi
+      - shim-signed
+
+  - action: apt
+    description: install ostree
+    recommends: true
+    packages:
+      - ostree
+
+  - action: run
+    description: mangle debian
+    chroot: false
+    script: scripts/ostree-convert-from-debian
+
+  - action: ostree-commit
+    descripion: Commit rootfs to ostree
+    repository: ostree_repo
+    branch: debian/bookworm
+
