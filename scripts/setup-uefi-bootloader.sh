@@ -48,5 +48,5 @@ rmdir $ostree/boot/efi
 # Copy config, kernel and initrd
 # Change the name of config to unify with patch added in T4469
 rsync -Pav $sysroot/boot/ostree $sysroot/boot/efi/
-cp $bootconf $sysroot/boot/efi/loader/ostree-0-1.conf
-rm -f $sysroot/boot/efi/loader/loader.conf
+#cp $bootconf $sysroot/boot/efi/loader/ostree-0-1.conf
+#rm -f $sysroot/boot/efi/loader/loader.conf

@@ -46,18 +46,24 @@ actions:
     description: grub
     recommends: true
     packages:
-      - grub-efi
-      - shim-signed
+      - systemd-boot
 
   - action: run
-    description: setup grub
+    description: install bootloader
     chroot: true
-    command: |
-      TARGET="x86_64"
-      update-grub
-      # This will create EFI/BOOT
-      grub-install --uefi-secure-boot --target="${TARGET}-efi" --no-nvram --removable
-      # This will create EFI/debian
-      # grub-install --uefi-secure-boot --target="${TARGET}-efi" --no-nvram
-      update-grub
-      sed -i 's/vda/sda/g' /boot/grub/grub.cfg
+    command: bootctl --path=/boot/efi install
+
+  - action: run
+    description: create the default entry for the booloader
+    chroot: true
+    command: mkdir /boot/efi/Default
+
+  - action: run
+    description: make machine-id unique
+    chroot: false
+    command: truncate -s0 "${ROOTDIR}/etc/machine-id"
+
+  - action: run
+    chroot: false
+    description: drop random-seed
+    command: rm "${ROOTDIR}/boot/efi/loader/random-seed"
