@@ -1,3 +1,4 @@
 disk.img
 rootfs.tar.gz
 ostree_repo
+ostree-disk.img

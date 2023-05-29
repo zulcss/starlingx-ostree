@@ -17,17 +17,21 @@ actions:
       - initramfs-tools
 
   - action: apt
-    description: install grub
+    description: install systemd-boot
     recommends: true
     packages:
-      - grub-efi
-      - shim-signed
+      - systemd-boot
 
   - action: apt
     description: install ostree
     recommends: true
     packages:
       - ostree
+
+  - action: run
+    description: empty /etc/machin-id
+    chroot: false
+    command: truncate -s0 "${ROOTDIR}/etc/machine-id"
 
   - action: run
     description: mangle debian
