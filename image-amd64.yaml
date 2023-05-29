@@ -1,0 +1,49 @@
+---
+{{ $cmdline := or .cmdline "console=tty0 console=ttyS0,115200n8 rootwait rw quiet splash plymouth.ignore-serial-consoles fsck.mode=auto fsck.repair=yes systemd.gpt_auto=false" }}
+
+architecture: amd64
+
+actions:
+  - action: unpack
+    compression: gz
+    file: rootfs.tar.gz
+
+  - action: image-partition
+    imagename: disk.img
+    imagesize: 3G
+    partitiontype: gpt
+
+    mountpoints:
+      - mountpoint: /
+        partition: system
+      - mountpoint: /boot/efi
+        partition: EFI
+
+    partitions:
+      - name: EFI
+        fs: vfat
+        start: 0%
+        end: 256M
+        flags: [boot]
+      - name: system
+        fs: ext4
+        start: 256M
+        end: 100%
+
+  - action: filesystem-deploy
+    description: setup rootfs
+    setup-fstab: true
+    setup-kernel-cmdline: false
+
+  - action: run
+    description: setup grub
+    chroot: true
+    command: |
+      TARGET="x86_64"
+      update-grub
+      # This will create EFI/BOOT
+      grub-install --uefi-secure-boot --target="${TARGET}-efi" --no-nvram --removable
+      # This will create EFI/debian
+      # grub-install --uefi-secure-boot --target="${TARGET}-efi" --no-nvram
+      update-grub
+      sed -i 's/vda/sda/g' /boot/grub/grub.cfg

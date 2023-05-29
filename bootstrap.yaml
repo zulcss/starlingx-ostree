@@ -1,0 +1,117 @@
+---
+
+architecture: amd64
+
+actions:
+  - action: debootstrap
+    suite: bookworm
+    variant: minbase
+    components:
+      - main
+      - contrib
+      - non-free
+      - non-free-firmware
+    mirror: http://ftp.ca.debian.org/debian
+
+  - action: apt
+    packages:
+      - usr-is-merged
+
+  - action: overlay
+    description: debian overlay
+    source: overlay/debian
+ 
+  - action: apt
+    description: apt-transport and dependencies
+    recommend: false
+    packages:
+      - apt-transport-https
+      - ca-certificates
+      - gnupg2
+      - curl 
+      - wget
+
+  - action: apt
+    description: base packages
+    recommends: true
+    packages:
+      - bash
+      - bash-completion
+      - bzip2
+      - file
+      - gnupg
+      - less
+      - lzma
+      - mawk 
+      - whiptail
+      - lsb-release
+      - sudo
+      - parted
+      - vim
+      - init
+      - iproute2
+      - iputils-ping
+      - isc-dhcp-client
+      - locales
+      - netbase
+      - net-tools
+      - openssh-client
+      - procps
+      - udev
+      - dbus
+      - policykit-1
+      - libnss-resolve
+
+  - action: apt
+    description: misc apckages
+    packages:
+      - git
+
+  - action: apt
+    description: kernel
+    recommends: true
+    packages:
+      - linux-image-amd64
+      - initramfs-tools
+
+  - action: apt
+    description: grub
+    recommends: true
+    packages:
+      - grub-efi
+      - shim-signed
+
+  - action: run
+    description: Install standard system utilities
+    chroot: true
+    command: |
+      apt-get -y update
+      apt-get -y install $(dpkg-query -W -f'${Package}\t${Priority}\n' | awk '/standard$/ {printf "%s ", $1}')
+      apt-get -y install $(dpkg-query -W -f'${Package}\t${Priority}\n' | awk '/important$/ {printf "%s ", $1}')
+  
+  - action: run
+    description: setup hostname
+    chroot: true
+    command: echo "localhsot" > /etc/hostname
+
+  - action: overlay
+    description: autologin
+    source: overlay/auto-login
+
+  - action: overlay
+    description: network
+    source: overlay/networkd
+
+  - action: run
+    description: setup networking
+    chroot: true
+    script: scripts/setup-networking.sh
+
+  - action: run
+    description: setup mtab
+    chroot: true
+    script: scripts/create-mtab-symlink.hook.sh
+
+  - action: pack
+    compression: gz
+    file: rootfs.tar.gz
